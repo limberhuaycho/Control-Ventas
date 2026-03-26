@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvenPro - Mi Cuenta</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header"><h1>📦 InvenPro</h1><p>Sistema de Inventario</p></div>
+      <nav class="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user"></div>
+        <button class="btn btn-ghost btn-full" id="logout-btn" style="justify-content:flex-start;color:rgba(255,255,255,0.5)">🚪 Cerrar sesión</button>
+      </div>
+    </aside>
+    <div class="main-content">
+      <div class="mobile-header"><h1>📦 InvenPro</h1><button class="hamburger" id="hamburger">☰</button></div>
+      <div class="mobile-nav" id="mobile-nav"></div>
+      <div class="page-content">
+        <div class="container-md space-y">
+          <h1 class="page-title">👤 Mi Cuenta</h1>
+          <div class="card">
+            <div class="card-body text-center" style="padding-top:2rem">
+              <div class="account-avatar" id="account-avatar">U</div>
+              <h2 id="account-name" style="margin-bottom:0.25rem">Usuario</h2>
+              <span class="badge badge-secondary" id="account-role" style="text-transform:capitalize"></span>
+              <span class="badge badge-outline hidden" id="account-guest">Invitado</span>
+            </div>
+            <div class="card-body" id="account-info" style="padding-top:0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    checkAuth((user, userData) => {
+      if (!userData) return;
+      setupSidebar(userData, "cuenta.html");
+
+      const name = userData.displayName || "Usuario";
+      document.getElementById("account-avatar").textContent = name[0].toUpperCase();
+      document.getElementById("account-name").textContent = name;
+      document.getElementById("account-role").textContent = userData.role;
+      if (userData.isAnonymous) document.getElementById("account-guest").classList.remove("hidden");
+
+      const info = [
+        { icon: "👤", label: "Nombre", value: name },
+        { icon: "✉️", label: "Email", value: userData.email || "Sin email (Invitado)" },
+        { icon: "🛡️", label: "Rol", value: userData.role },
+        { icon: "🔑", label: "UID", value: userData.uid.substring(0, 12) + "..." }
+      ];
+
+      document.getElementById("account-info").innerHTML = info.map(i => `
+        <div class="account-info-row">
+          <span>${i.icon}</span>
+          <div>
+            <p class="account-info-label">${i.label}</p>
+            <p class="account-info-value">${sanitize(i.value)}</p>
+          </div>
+        </div>
+      `).join("");
+    });
+  </script>
+</body>
+</html>

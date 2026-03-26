@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvenPro - Iniciar Sesión</title>
+  <meta name="description" content="Sistema de inventario y control de ventas en tiempo real">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-page">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
+    <div class="login-card glass">
+      <div class="login-logo">
+        <div class="login-logo-icon">📦</div>
+        <h1>InvenPro</h1>
+        <p id="login-subtitle">Inicia sesión en tu cuenta</p>
+      </div>
+
+      <form id="auth-form">
+        <!-- Name (only register) -->
+        <div class="form-group hidden" id="name-group">
+          <label for="name">Nombre completo</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="name" placeholder="Tu nombre" maxlength="100">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="email" placeholder="tu@email.com" maxlength="255" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="••••••" maxlength="128" required>
+          </div>
+        </div>
+
+        <!-- Role (only register) -->
+        <div class="form-group hidden" id="role-group">
+          <label>Tipo de cuenta</label>
+          <div class="radio-group">
+            <label><input type="radio" name="role" value="vendedor" checked> Vendedor</label>
+            <label><input type="radio" name="role" value="comprador"> Comprador</label>
+          </div>
+        </div>
+
+        <div id="error-msg" class="error-msg hidden"></div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
+          🔑 Iniciar sesión
+        </button>
+      </form>
+
+      <div class="divider"><span>o continúa con</span></div>
+
+      <div class="social-btns">
+        <button class="btn btn-outline" id="google-btn">🔵 Google</button>
+        <button class="btn btn-outline" id="guest-btn">👤 Invitado</button>
+      </div>
+
+      <div class="toggle-link">
+        <span id="toggle-text">¿No tienes cuenta?</span>
+        <button id="toggle-btn">Crear cuenta</button>
+        <div class="contenedor">
+          <p>© LIMBER</p>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Check if already logged in
+    auth.onAuthStateChanged((user) => {
+      if (user) window.location.href = "dashboard.html";
+    });
+
+    let isRegister = false;
+    const form = document.getElementById("auth-form");
+    const nameGroup = document.getElementById("name-group");
+    const roleGroup = document.getElementById("role-group");
+    const submitBtn = document.getElementById("submit-btn");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const toggleText = document.getElementById("toggle-text");
+    const subtitle = document.getElementById("login-subtitle");
+    const errorMsg = document.getElementById("error-msg");
+
+    // Toggle login/register
+    toggleBtn.addEventListener("click", () => {
+      isRegister = !isRegister;
+      nameGroup.classList.toggle("hidden", !isRegister);
+      roleGroup.classList.toggle("hidden", !isRegister);
+      submitBtn.innerHTML = isRegister ? "✨ Crear cuenta" : "🔑 Iniciar sesión";
+      toggleText.textContent = isRegister ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?";
+      toggleBtn.textContent = isRegister ? "Inicia sesión" : "Crear cuenta";
+      subtitle.textContent = isRegister ? "Crea tu cuenta para comenzar" : "Inicia sesión en tu cuenta";
+      errorMsg.classList.add("hidden");
+    });
+
+    // Form submit
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add("hidden");
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!validateEmail(email)) {
+        errorMsg.textContent = "Email inválido";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Cargando...";
+
+      try {
+        if (isRegister) {
+          const name = document.getElementById("name").value.trim();
+          const role = document.querySelector('input[name="role"]:checked').value;
+          if (!name) throw { code: "", message: "El nombre es requerido" };
+          if (password.length < 6) throw { code: "auth/weak-password" };
+          await registerWithEmail(email, password, name, role);
+        } else {
+          await loginWithEmail(email, password);
+        }
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        errorMsg.textContent = err.code ? getAuthError(err.code) : err.message;
+        errorMsg.classList.remove("hidden");
+      }
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = isRegister ? "✨ Crear cuenta" : "🔑 Iniciar sesión";
+    });
+
+    // Google
+    document.getElementById("google-btn").addEventListener("click", async () => {
+      try {
+        await loginWithGoogle();
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        errorMsg.textContent = err.message || "Error con Google";
+        errorMsg.classList.remove("hidden");
+      }
+    });
+
+    // Guest
+    document.getElementById("guest-btn").addEventListener("click", async () => {
+      try {
+        await loginAsGuest();
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        errorMsg.textContent = err.message || "Error al ingresar como invitado";
+        errorMsg.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
