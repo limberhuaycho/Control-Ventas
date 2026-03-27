@@ -1,34 +1,41 @@
 # 📦 InvenPro - Sistema de Inventario y Ventas
 
-Sistema web completo para gestión de inventario y ventas con Firebase.
+Sistema web con HTML, CSS y JavaScript puro + Firebase.
 
-## Estructura
-
+## 📁 Estructura
 ```
 invenpro/
-├── index.html          # Login
-├── dashboard.html      # Panel principal
-├── subir.html          # Subir productos
-├── ventas.html         # Ventas
-├── historial.html      # Control de ventas
-├── cuenta.html         # Mi cuenta
+├── index.html          (Login)
+├── dashboard.html      (Panel principal)
+├── subir.html          (Subir productos - solo vendedores)
+├── ventas.html         (Catálogo y ventas)
+├── historial.html      (Control de ventas - solo vendedores)
+├── cuenta.html         (Mi cuenta)
 ├── css/
-│   └── styles.css      # Estilos
-└── js/
-    ├── firebase.js     # Configuración Firebase
-    ├── auth.js         # Autenticación
-    ├── app.js          # Utilidades
-    ├── productos.js    # Módulo productos
-    └── ventas.js       # Módulo ventas
+│   └── styles.css
+├── js/
+│   ├── firebase-config.js
+│   ├── auth.js
+│   ├── app.js
+│   ├── productos.js
+│   └── ventas.js
+└── README.md
 ```
 
-## Configuración
+## 🚀 Despliegue en GitHub Pages
 
-1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com/)
-2. Habilita Authentication (Email/Password + Google)
-3. Habilita Firestore Database (modo test)
-4. Edita `js/firebase.js` con tus credenciales
+1. Crea un repositorio en GitHub
+2. Sube todos los archivos
+3. Ve a Settings → Pages → Source: main → Save
+4. **IMPORTANTE**: En Firebase Console → Authentication → Settings → Authorized domains, agrega tu dominio `usuario.github.io`
 
-## Despliegue
+## 🔧 Configuración Firebase
 
-Sube todos los archivos a GitHub Pages, Netlify, Vercel, o cualquier hosting estático.
+Tu config ya está en `js/firebase-config.js`. Asegúrate de tener habilitados:
+- Authentication → Email/Password
+- Authentication → Google
+- Authentication → Anonymous
+- Firestore Database (crear las colecciones `usuarios`, `productos`, `ventas`)
+
+## ⏰ Horario de ventas
+Las ventas solo están activas de 06:00 AM a 09:00 PM (hora Bolivia, UTC-4).
